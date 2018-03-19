@@ -1,15 +1,33 @@
 import Game from './Game';
 
-describe('game move array forward testing', function() {
+describe('game initializes correctly', () => {
+  let game = new Game();
+  
+  it('has two initial cells', () => {
+    let matrix = game.state.matrix;
+    let counter = 0;
+    matrix.forEach((row) => {
+      row.forEach((cell) => {
+        if (cell > 0) {
+          counter++;
+        }
+      })
+    });
+
+    expect(counter).toEqual(2);
+  });
+
+});
+
+describe('game move array forward testing', () => {
   let game;
+  let array;
   
   beforeEach(() => {
     game = new Game();
-  })
-  
-  it('moves cell to furthest vacancy', () => {
-    let array;
+  });
 
+  it('moves cell to furthest vacancy', () => {
     array = [2, 0, 0, 0];
     game.moveArrayForward(array);
     expect(array.toString()).toEqual('2,0,0,0');
@@ -27,9 +45,13 @@ describe('game move array forward testing', function() {
     expect(array.toString()).toEqual('2,0,0,0');
   });
 
-  it('adds equal value', () => {
-    let array;
+  it('should not move cell', () => {
+    array = [2, 4, 0, 0];
+    game.moveArrayForward(array);
+    expect(array.toString()).toEqual('2,4,0,0');
+  })
 
+  it('adds equal value', () => {
     array = [2, 2, 0, 0];
     game.moveArrayForward(array);
     expect(array.toString()).toEqual('4,0,0,0');
@@ -40,8 +62,6 @@ describe('game move array forward testing', function() {
   });
 
   it('adds equal value and moves forward', () => {
-    let array;
-
     array = [0, 2, 2, 0];
     game.moveArrayForward(array);
     expect(array.toString()).toEqual('4,0,0,0');
@@ -52,8 +72,6 @@ describe('game move array forward testing', function() {
   });
 
   it('adds equal value only once', () => {
-    let array;
-
     array = [2, 2, 4, 0];
     game.moveArrayForward(array);
     expect(array.toString()).toEqual('4,4,0,0');

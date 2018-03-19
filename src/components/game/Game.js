@@ -39,6 +39,7 @@ class Game extends React.Component {
     
     let matrix = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     this.spawnNewCell(matrix, 2);
+
     this.state = {matrix};
   }
 
@@ -100,8 +101,10 @@ class Game extends React.Component {
 
   moveArrayForward(array) {
     let changed = false;
+    let added = new Array(array.length).fill(false);
+    
+    console.log(array);
 
-    // console.log(array);
     for (let i = 1; i < array.length; i++) {
       if (array[i] === 0) {
         continue;
@@ -114,10 +117,11 @@ class Game extends React.Component {
       }
 
       // change position
-      if (targetPos > 0 && array[targetPos - 1] === array[i]) {
+      if (targetPos > 0 && !added[targetPos - 1] && array[targetPos - 1] === array[i]) {
         targetPos--;
         array[targetPos] *= 2;
         array[i] = 0;
+        added[targetPos] = true;
       } else {
         array[targetPos] = array[i];
         array[i] = 0;
@@ -125,8 +129,8 @@ class Game extends React.Component {
 
       changed = changed || targetPos !== i;
     }
-    // console.log(array);
-    // console.log('------------------------------');
+    console.log(array);
+    console.log('------------------------------');
 
     return changed;
   }
@@ -142,15 +146,16 @@ class Game extends React.Component {
 
     for (let i = 0; i < num; i++) {
       if (emptyCells.length) {
-        let newCellLocation = getRandomInt(emptyCells.length);
-        newCellLocation = emptyCells[newCellLocation];
+        let randomIndex = getRandomInt(emptyCells.length);
+        let newCellLocation = emptyCells[randomIndex];
         matrix[newCellLocation.row][newCellLocation.col] = 2;
-        emptyCells = emptyCells.splice(newCellLocation, 1);
+        emptyCells.splice(randomIndex, 1);
       }
     }
   }
 
   render() {
+    console.log(this.state.matrix);
     return (
       <div onKeyDown={this.handleKeyDown} tabIndex="0">
         <GridBoard matrix={this.state.matrix}/>
