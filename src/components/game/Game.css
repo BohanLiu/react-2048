@@ -1,0 +1,22 @@
+.grid-cell {
+  height: 50px;
+  line-height: 50px;
+  width: 50px;
+  text-align: center;
+  vertical-align: center;
+  border: 2px solid green;
+  margin: -1px;
+  font-size: 20px;
+}
+
+.grid-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.grid-board {
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
