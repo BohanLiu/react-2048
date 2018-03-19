@@ -1,11 +1,13 @@
+import React from 'react';
 import Game from './Game';
 
 describe('game initializes correctly', () => {
-  let game = new Game();
+  let game = new Game({});
   
   it('has two initial cells', () => {
-    let matrix = game.state.matrix;
+    let matrix = game.state.valueMatrix;
     let counter = 0;
+    
     matrix.forEach((row) => {
       row.forEach((cell) => {
         if (cell > 0) {
@@ -24,7 +26,7 @@ describe('game moves array forward testing', () => {
   let array;
   
   beforeEach(() => {
-    game = new Game();
+    game = new Game({});
   });
 
   it('moves cell to furthest vacancy', () => {
