@@ -43,10 +43,13 @@ class Game extends React.Component {
     super(props);
     this.checkProps(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    
-    let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    let matrix = props.matrix || [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 0], [0, 0, 0, 0]];
+    // let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     this.spawnNewCell(matrix, 2);
-    this.state = {valueMatrix: matrix};
+    this.state = {
+      valueMatrix: matrix,
+      isAlive: true
+    };
 
     this.resetChangedMatrix();
   }
@@ -216,7 +219,41 @@ class Game extends React.Component {
     }
   }
 
+  checkAlive() {
+    let matrix = copy2DArray(this.state.valueMatrix);
+    for (let row = 0; row < matrix.length - 1; row++) {
+      for (let col = 0; col < matrix.length - 1; col++) {
+        if (
+          matrix[row][col] === 0 // vacancy
+          || matrix[row][col] === matrix[row + 1][col] // right
+          || matrix[row][col] === matrix[row][col + 1] // bottom
+        ) {
+          return true;
+        }
+      }
+    }
+    console.log('check edge');
+    // check edge vacancy
+    for (let col = 0; col < matrix.length; col++) {
+      if (matrix[matrix.length - 1][col] === 0) {
+        return true;
+      }
+      if (col === matrix.length - 1) {
+        for (let row = 0; row < matrix.length - 2; row++) {
+          if (matrix[row][col] === 0) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
   render() {
+    if (!this.checkAlive()) {
+      alert('GAME OVER!');
+    }
     return (
       <div onKeyDown={this.handleKeyDown} tabIndex="0">
         <GridBoard 
