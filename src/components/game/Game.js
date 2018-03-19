@@ -3,8 +3,9 @@ import {getRandomInt, copy2DArray} from '../../Utils';
 import './Game.css';
 
 function GridCell(props) {
+  let className = "grid-cell cell-" + (props.value > 2048 ? 'exceeded' : props.value);
   return (
-    <div className="grid-cell">{props.value > 0 ? props.value : ''}</div>
+    <div className={className}>{props.value > 0 ? props.value : ''}</div>
   );
 }
 
@@ -37,7 +38,8 @@ class Game extends React.Component {
     super(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     
-    let matrix = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    // let matrix = [[2, 4, 8, 16], [32, 64, 128, 256], [1024, 2048, 4096, 8192], [0, 0, 0, 0]];
+    let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     this.spawnNewCell(matrix, 2);
 
     this.state = {matrix};
@@ -124,7 +126,7 @@ class Game extends React.Component {
         added[targetPos] = true;
       } else {
         array[targetPos] = array[i];
-        array[i] = 0;
+        array[i] = targetPos !== i ? 0 : array[i];
       }
 
       changed = changed || targetPos !== i;
@@ -139,8 +141,10 @@ class Game extends React.Component {
     let emptyCells = [];
 
     for (let row = 0; row < matrix.length; row++) {
-      for (let  col = 0; col < matrix[row].length; col++) {
-        emptyCells.push({row, col});
+      for (let col = 0; col < matrix[row].length; col++) {
+        if (matrix[row][col] === 0) {
+          emptyCells.push({row, col});
+        }
       }
     }
 
