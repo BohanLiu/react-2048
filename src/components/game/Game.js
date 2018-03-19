@@ -4,14 +4,18 @@ import './Game.css';
 
 function GridCell(props) {
   let className = "grid-cell cell-" + (props.value > 2048 ? 'exceeded' : props.value);
+  if (props.changed) {
+    className += ' cell-value-changed';
+  }
   return (
     <div className={className}>{props.value > 0 ? props.value : ''}</div>
   );
 }
 
 function GridRow(props) {
-  let cells = props.cells.map((cellValue, index) => {
-    return <GridCell key={index} value={cellValue}/>;
+  let changes = props.changes;
+  let cells = props.values.map((cellValue, index) => {
+    return <GridCell key={index} value={cellValue} changed={changes[index]}/>;
   });
 
   return (
@@ -22,8 +26,9 @@ function GridRow(props) {
 }
 
 function GridBoard(props) {
-  let rows = props.matrix.map((row, rowIndex) => {
-    return <GridRow key={'row-'+rowIndex} cells={row}/>;
+  let changedMatrix = props.changedMatrix;
+  let rows = props.valueMatrix.map((row, rowIndex) => {
+    return <GridRow key={'row-'+rowIndex} values={row} changes={changedMatrix[rowIndex]}/>;
   });
 
   return (
@@ -36,16 +41,39 @@ function GridBoard(props) {
 class Game extends React.Component {
   constructor(props) {
     super(props);
+    this.checkProps(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     
-    // let matrix = [[2, 4, 8, 16], [32, 64, 128, 256], [1024, 2048, 4096, 8192], [0, 0, 0, 0]];
     let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     this.spawnNewCell(matrix, 2);
+    this.state = {valueMatrix: matrix};
 
-    this.state = {matrix};
+    this.resetChangedMatrix();
+  }
+
+  checkProps(props) {
+    if (props.matrix) {
+      if (props.matrix.length !== 4) {
+        throw(new Error('wrong matrix row number'));
+      }
+      props.matrix.forEach(row => {
+        if (row.length !== 4) {
+          throw(new Error('wrong matrix col number'));
+        }
+      });
+    }
+  }
+
+  resetChangedMatrix() {
+    let len = this.state.valueMatrix.length;
+    this.changedMatrix = [];
+    for (let i = 0; i < len; i++) {
+      this.changedMatrix.push(new Array(len).fill(false));
+    }
   }
 
   handleKeyDown(e) {
+    this.resetChangedMatrix();
     switch(e.key) {
       case 'ArrowUp':
         this.moveVertical(true);
@@ -65,65 +93,79 @@ class Game extends React.Component {
   }
 
   moveVertical(isDirectionUp) {
-    let matrix = copy2DArray(this.state.matrix);
+    let matrix = copy2DArray(this.state.valueMatrix);
     let changed = false;
 
     for (let col = 0; col < matrix.length; col++) {
+      let moveResult;
       // change by col
       let gridCol = matrix.map((row) => {
         return row[col];
       });
       if (isDirectionUp) {
-        changed = this.moveArrayForward(gridCol) || changed;
+        moveResult = this.moveArrayForward(gridCol);
+        changed = moveResult.changed || changed;
       } else {
         gridCol.reverse();
+        moveResult = this.moveArrayForward(gridCol);
         changed = this.moveArrayForward(gridCol) || changed;
         gridCol.reverse();
+        moveResult.added.reverse();
       }
 
       // fill in the new matrix
       for (let row = 0; row < matrix.length; row++) {
         matrix[row][col] = gridCol[row];
+        this.changedMatrix[row][col] = moveResult.added[row];
       }
     }
 
     if (changed) {
       this.spawnNewCell(matrix);
-      this.setState({matrix: matrix});
+      this.setState({valueMatrix: matrix});
     }
   }
 
   moveHorizontal(isDirectionLeft) {
-    console.log('horizontal: ' + isDirectionLeft);
-    let matrix = copy2DArray(this.state.matrix);
+    let matrix = copy2DArray(this.state.valueMatrix);
     let changed = false;
 
     for (let row = 0; row < matrix.length; row++) {
+      let moveResult;
       // change by row
       let gridRow = matrix[row];
+      
       if (isDirectionLeft) {
-        changed = this.moveArrayForward(gridRow) || changed;
+        moveResult = this.moveArrayForward(gridRow);
+        changed = moveResult.changed || changed;
       } else {
         gridRow.reverse();
-        changed = this.moveArrayForward(gridRow) || changed;
+        moveResult = this.moveArrayForward(gridRow);
+        changed = moveResult.changed || changed;
         gridRow.reverse();
+        moveResult.added.reverse();
       }
 
-      // fill in the new matrix
+      // fill in the new matrix and update changed mark matrix
       matrix[row] = gridRow;
+      this.changedMatrix[row] = moveResult.added;
     }
 
     if (changed) {
       this.spawnNewCell(matrix);
-      this.setState({matrix: matrix});
+      this.setState({valueMatrix: matrix});
     }
   }
 
+  /**
+   * Move array values to left based on 2048 like rule 
+   * @param {number[]} array 
+   * @returns {object} {changed: boolean, add: number[]}
+   */
   moveArrayForward(array) {
     let changed = false;
+    // array to store where two elements have been added together
     let added = new Array(array.length).fill(false);
-    
-    console.log(array);
 
     for (let i = 1; i < array.length; i++) {
       if (array[i] === 0) {
@@ -149,10 +191,8 @@ class Game extends React.Component {
 
       changed = changed || targetPos !== i;
     }
-    console.log(array);
-    console.log('------------------------------');
 
-    return changed;
+    return {changed, added};
   }
 
   spawnNewCell(matrix, num = 1) {
@@ -179,7 +219,10 @@ class Game extends React.Component {
   render() {
     return (
       <div onKeyDown={this.handleKeyDown} tabIndex="0">
-        <GridBoard matrix={this.state.matrix}/>
+        <GridBoard 
+          valueMatrix={this.state.valueMatrix}
+          changedMatrix={this.changedMatrix}
+        />
       </div>
     );
   }

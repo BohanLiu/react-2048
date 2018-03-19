@@ -95,6 +95,10 @@
   color: #f9f6f2;
 }
 
+.cell-value-changed {
+  animation: Cell-value-change 0.3s;
+}
+
 @keyframes Cell-value-change {
   from { transform: scale(1); }
   50% { transform: scale(1.2); }
