@@ -54,10 +54,10 @@ class Game extends React.Component {
         this.moveVertical(false);
         break;
       case 'ArrowLeft':
-        this.moveLeft();
+        this.moveHorizontal(true);
         break;
       case 'ArrowRight':
-        this.moveRight();
+        this.moveHorizontal(false);
         break;
       default:
         break;
@@ -93,12 +93,30 @@ class Game extends React.Component {
     }
   }
 
-  moveLeft() {
-    let matrix = this.state.matrix;
-  }
+  moveHorizontal(isDirectionLeft) {
+    console.log('horizontal: ' + isDirectionLeft);
+    let matrix = copy2DArray(this.state.matrix);
+    let changed = false;
 
-  moveRight() {
-    let matrix = this.state.matrix;
+    for (let row = 0; row < matrix.length; row++) {
+      // change by row
+      let gridRow = matrix[row];
+      if (isDirectionLeft) {
+        changed = this.moveArrayForward(gridRow) || changed;
+      } else {
+        gridRow.reverse();
+        changed = this.moveArrayForward(gridRow) || changed;
+        gridRow.reverse();
+      }
+
+      // fill in the new matrix
+      matrix[row] = gridRow;
+    }
+
+    if (changed) {
+      this.spawnNewCell(matrix);
+      this.setState({matrix: matrix});
+    }
   }
 
   moveArrayForward(array) {
@@ -159,7 +177,6 @@ class Game extends React.Component {
   }
 
   render() {
-    console.log(this.state.matrix);
     return (
       <div onKeyDown={this.handleKeyDown} tabIndex="0">
         <GridBoard matrix={this.state.matrix}/>

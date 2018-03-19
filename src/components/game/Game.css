@@ -4,27 +4,28 @@
   width: 50px;
   text-align: center;
   vertical-align: center;
-  margin: 2px;
+  margin: 3px;
   font-size: 20px;
   background: lightgrey;
   border-radius: 3px;
+  transition: 0.3s;
 }
 
 .grid-row {
   display: flex;
   flex-direction: row;
   background: #776e65;
-  padding: 0 1px;
+  padding: 0 3px;
 }
 
 .grid-row:first-child {
-  padding: 1px 1px;
+  padding-top: 3px;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
 }
 
 .grid-row:last-child {
-  padding: 1px 1px;
+  padding-bottom: 3px;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
 }
@@ -37,59 +38,65 @@
 }
 
 .cell-2 {
-  background-color: #eee4da;
+  background: #eee4da;
 }
 
 .cell-4 {
-  background-color: #ede0c8;
+  background: #ede0c8;
 }
 
 .cell-8 {
-  background-color: #f2b179;
+  background: #f2b179;
   color: #f9f6f2;
 }
 
 .cell-16 {
-  background-color: rgb(233, 153, 108);
+  background: rgb(233, 153, 108);
   color: #f9f6f2;
 }
 
 .cell-32 {
-  background-color: #f67c5f;
+  background: #f67c5f;
   color: #f9f6f2;
 }
 
 .cell-64 {
-  background-color: #f65e3b;
+  background: #f65e3b;
   color: #f9f6f2;
 }
 
 .cell-128 {
-  background-color: #edcf72;
+  background: #edcf72;
   color: #f9f6f2;
 }
 
 .cell-256 {
-  background-color: #edcc61;
+  background: #edcc61;
   color: #f9f6f2;
 }
 
 .cell-512 {
-  background-color: #edc850;
+  background: #edc850;
   color: #f9f6f2;
 }
 
 .cell-1024 {
-  background-color: #edc53f;
+  background: #edc53f;
   color: #f9f6f2;
 }
 
 .cell-2048 {
-  background-color: #edc22e;
+  background: #edc22e;
   color: #f9f6f2;
 }
 
 .cell-exceeded {
-  background-color: #3c3a32;
+  background: #3c3a32;
   color: #f9f6f2;
+}
+
+@keyframes Cell-value-change {
+  from { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  to { transform: scale(1); }
 }
