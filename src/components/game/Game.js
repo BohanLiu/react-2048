@@ -93,6 +93,7 @@ class Game extends React.Component {
       default:
         break;
     }
+    this.isGameAlive();
   }
 
   moveVertical(isDirectionUp) {
@@ -219,39 +220,32 @@ class Game extends React.Component {
     }
   }
 
-  checkAlive() {
+  isGameAlive() {
+    let isAlive = false;
     let matrix = copy2DArray(this.state.valueMatrix);
-    for (let row = 0; row < matrix.length - 1; row++) {
-      for (let col = 0; col < matrix.length - 1; col++) {
-        if (
-          matrix[row][col] === 0 // vacancy
-          || matrix[row][col] === matrix[row + 1][col] // right
-          || matrix[row][col] === matrix[row][col + 1] // bottom
-        ) {
-          return true;
-        }
-      }
-    }
-    console.log('check edge');
-    // check edge vacancy
+    
+    // check horizontal move
+    matrix.forEach((row) => {
+      let checkLeft = this.moveArrayForward([].concat(row)).changed;
+      let checkRight = this.moveArrayForward([].concat(row).reverse()).changed;
+      isAlive = checkLeft || checkRight || isAlive;
+    });
+
+    // check vertical
     for (let col = 0; col < matrix.length; col++) {
-      if (matrix[matrix.length - 1][col] === 0) {
-        return true;
-      }
-      if (col === matrix.length - 1) {
-        for (let row = 0; row < matrix.length - 2; row++) {
-          if (matrix[row][col] === 0) {
-            return true;
-          }
-        }
-      }
+      let gridCol = matrix.map((row) => {
+        return row[col];
+      });
+      let checkUp = this.moveArrayForward([].concat(gridCol)).changed;
+      let checkDown = this.moveArrayForward([].concat(gridCol).reverse()).changed;
+      isAlive = checkUp || checkDown || isAlive;
     }
 
-    return false;
+    this.setState({isAlive});
   }
 
   render() {
-    if (!this.checkAlive()) {
+    if (!this.state.isAlive) {
       alert('GAME OVER!');
     }
     return (
