@@ -52,7 +52,6 @@
 }
 
 /* game */
-
 .grid-row {
   display: flex;
   flex-direction: row;
@@ -83,7 +82,6 @@
 }
 
 /* cell style */
-
 .grid-cell {
   height: 50px;
   line-height: 50px;
@@ -94,6 +92,7 @@
   font-size: 20px;
   font-weight: bold;
   border-radius: 3px;
+  visibility: visible;
   transition: 100ms ease-in-out;
 }
 
@@ -155,13 +154,23 @@
   color: #f9f6f2;
 }
 
+/* move animation takes 100ms before this one */
 .cell-value-changed {
   animation: Cell-value-change 150ms 100ms;
 }
-
 @keyframes Cell-value-change {
   from { transform: scale(1); }
   50% { transform: scale(1.2); }
+  to { transform: scale(1); }
+}
+
+/* move animation takes 100ms, new cell hides 100ms before appears */
+.cell-newly-spawned {
+  animation: Cell-newly-spawned 250ms;
+}
+@keyframes Cell-newly-spawned {
+  from { visibility: hidden; }
+  40% { transform: scale(0.2); }
   to { transform: scale(1); }
 }
 

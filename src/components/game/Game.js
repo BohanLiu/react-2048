@@ -34,8 +34,11 @@ function GameOverCover() {
 function GridCell(props) {
   // cell style
   let className = "grid-cell cell-" + (props.value > 2048 ? 'exceeded' : props.value);
-  if (props.changed) {
+  if (props.isChanged) {
     className += ' cell-value-changed';
+  }
+  if (props.isNew) {
+    className += ' cell-newly-spawned';
   }
   // cell position
   className += ' pos-' + props.pos[0] + '-' + props.pos[1]
@@ -45,7 +48,6 @@ function GridCell(props) {
 }
 
 function GridBoard(props) {
-  let changedMatrix = props.changedMatrix;
   let cells = [];
   props.valueMatrix.forEach((row, rowIndex) => {
     row.forEach((cell, colIndex) => {
@@ -54,7 +56,8 @@ function GridBoard(props) {
           <GridCell 
             key={cell.id} 
             value={cell.value} 
-            changed={changedMatrix[rowIndex][colIndex]}
+            isChanged={cell.isValueChanged}
+            isNew={cell.isNewlySpawned}
             pos={[rowIndex, colIndex]}
           />
         );
@@ -74,6 +77,7 @@ class Game extends React.Component {
     super(props);
     this.checkProps(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+
     // let matrix = props.matrix || [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 0], [0, 0, 0, 0]];
     let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
     matrix = this.createSquareMatrix(matrix.length, null);
@@ -84,9 +88,6 @@ class Game extends React.Component {
       valueMatrix: matrix,
       isAlive: true
     };
-
-    this.resetChangedMatrix();
-    this.initializeIdMatrix();
   }
 
   checkProps(props) {
@@ -102,27 +103,33 @@ class Game extends React.Component {
     }
   }
 
-  resetChangedMatrix() {
-    this.changedMatrix = this.createSquareMatrix(this.state.valueMatrix.length, false);
+  createSquareMatrix(size, initialValue) {
+    let matrix = [];
+    for (let i = 0; i < size; i++) {
+      matrix.push(new Array(size).fill(initialValue));
+    }
+    return matrix;
   }
 
-  initializeIdMatrix() {
-    this.idMatrix = this.createSquareMatrix(this.state.valueMatrix.length, 0);
-  }
 
-  createSquareMatrix(len, initialValue) {
-    let newMatrix = [];
-    for (let i = 0; i < len; i++) {
-      newMatrix.push(new Array(len).fill(initialValue))
-    } 
-    return newMatrix;
+  cloneMatrix(matrix, dataOnly = true) {
+    let clonedMatrix = [];
+    matrix.forEach((row) => {
+      let clonedRow = new Array(row.length).fill(null);
+      row.forEach((cell, index) => {
+        if (cell) {
+          clonedRow[index] = dataOnly ? cell.cloneDataOnly() : cell.clone(); 
+        }
+      });
+      clonedMatrix.push(clonedRow);
+    });
+    return clonedMatrix;
   }
 
   handleKeyDown(e) {
     if (!this.isGameAlive()) {
       return;
     }
-    this.resetChangedMatrix();
     switch(e.key) {
       case 'ArrowUp':
         this.moveVertical(true);
@@ -142,8 +149,7 @@ class Game extends React.Component {
   }
 
   moveVertical(isDirectionUp) {
-    // let matrix = copy2DArray(this.state.valueMatrix);
-    let matrix = this.state.valueMatrix;
+    let matrix = this.cloneMatrix(this.state.valueMatrix);
     let changed = false;
 
     for (let col = 0; col < matrix.length; col++) {
@@ -168,7 +174,6 @@ class Game extends React.Component {
       // fill in the new matrix
       for (let row = 0; row < matrix.length; row++) {
         matrix[row][col] = gridCol[row];
-        this.changedMatrix[row][col] = moveResult.added[row];
       }
     }
 
@@ -179,9 +184,10 @@ class Game extends React.Component {
   }
 
   moveHorizontal(isDirectionLeft) {
-    // let matrix = copy2DArray(this.state.valueMatrix);
-    let matrix = this.state.valueMatrix;
+    let matrix = this.cloneMatrix(this.state.valueMatrix);
     let changed = false;
+    // console.log(this.state.valueMatrix);
+    // console.log(matrix);
 
     for (let row = 0; row < matrix.length; row++) {
       let moveResult;
@@ -196,13 +202,12 @@ class Game extends React.Component {
         moveResult = this.moveArrayForward(gridRow);
         changed = moveResult.changed || changed;
         gridRow.reverse();
-        moveResult.added.reverse();
       }
 
       // fill in the new matrix and update changed mark matrix
       matrix[row] = gridRow;
-      this.changedMatrix[row] = moveResult.added;
     }
+    // console.log(matrix);
 
     if (changed) {
       this.spawnNewCell(matrix);
@@ -234,7 +239,7 @@ class Game extends React.Component {
         targetPos--;
         // array[targetPos].id = array[i].id;
         array[targetPos] = array[i];
-        array[targetPos].value *= 2;
+        array[targetPos].setValue(array[i].value * 2);
         array[i] = null;
         added[targetPos] = true;
       } else {
@@ -303,18 +308,18 @@ class Game extends React.Component {
   }
 
   render() {
+    console.log('render');
+    console.log(this.state.valueMatrix);
+    console.log('render');
     let gameOverCover;
     if (!this.state.isAlive) {
       gameOverCover = <GameOverCover/>;
     }
     return (
-      <div onKeyDown={this.handleKeyDown} tabIndex="0">
+      <div onKeyDown={this.handleKeyDown} tabIndex="0" >
         {gameOverCover}
-        <BackgroundBoard size={this.state.valueMatrix.length}/>
-        <GridBoard 
-          valueMatrix={this.state.valueMatrix}
-          changedMatrix={this.changedMatrix}
-        />
+        <BackgroundBoard size={this.state.valueMatrix.length} />
+        <GridBoard valueMatrix={this.state.valueMatrix} />
       </div>
     );
   }
