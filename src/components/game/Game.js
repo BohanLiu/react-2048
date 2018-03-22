@@ -1,39 +1,70 @@
 import React from 'react';
-import {getRandomInt, copy2DArray} from '../../Utils';
+import { getRandomInt } from '../../Utils';
+import CellData from './CellData';
 import './Game.css';
 
+function BackgroundBoard(props) {
+  let rows = [];
+  for (let i = 0; i < props.size; i++) {
+    let cells = [];
+    for (let j = 0; j < props.size; j++) {
+      cells.push(<div key={i + '-' + j} className="background-cell"></div>);
+    }
+    let row = (
+      <div key={'row-'+i} className="background-row">
+        {cells}
+      </div>);
+    rows.push(row);
+  }
+  return (
+    <div className="background-board">
+      {rows}
+    </div>
+  );
+}
+
+function GameOverCover() {
+  return (
+    <div className="grid-board gameover-cover">
+      GAME OVER
+    </div>
+  );
+}
+
 function GridCell(props) {
+  // cell style
   let className = "grid-cell cell-" + (props.value > 2048 ? 'exceeded' : props.value);
   if (props.changed) {
     className += ' cell-value-changed';
   }
+  // cell position
+  className += ' pos-' + props.pos[0] + '-' + props.pos[1]
   return (
     <div className={className}>{props.value > 0 ? props.value : ''}</div>
   );
 }
 
-function GridRow(props) {
-  let changes = props.changes;
-  let cells = props.values.map((cellValue, index) => {
-    return <GridCell key={index} value={cellValue} changed={changes[index]}/>;
-  });
-
-  return (
-    <div className="grid-row">
-      {cells}
-    </div>
-  );
-}
-
 function GridBoard(props) {
   let changedMatrix = props.changedMatrix;
-  let rows = props.valueMatrix.map((row, rowIndex) => {
-    return <GridRow key={'row-'+rowIndex} values={row} changes={changedMatrix[rowIndex]}/>;
+  let cells = [];
+  props.valueMatrix.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      if (cell) {
+        cells.push(
+          <GridCell 
+            key={cell.id} 
+            value={cell.value} 
+            changed={changedMatrix[rowIndex][colIndex]}
+            pos={[rowIndex, colIndex]}
+          />
+        );
+      }
+    });
   });
 
   return (
     <div className="grid-board">
-      {rows}
+      {cells}
     </div>
   );
 }
@@ -43,15 +74,19 @@ class Game extends React.Component {
     super(props);
     this.checkProps(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    let matrix = props.matrix || [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 0], [0, 0, 0, 0]];
-    // let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    // let matrix = props.matrix || [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 0], [0, 0, 0, 0]];
+    let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    matrix = this.createSquareMatrix(matrix.length, null);
+    this.idCounter = 0;
     this.spawnNewCell(matrix, 2);
+
     this.state = {
       valueMatrix: matrix,
       isAlive: true
     };
 
     this.resetChangedMatrix();
+    this.initializeIdMatrix();
   }
 
   checkProps(props) {
@@ -68,14 +103,25 @@ class Game extends React.Component {
   }
 
   resetChangedMatrix() {
-    let len = this.state.valueMatrix.length;
-    this.changedMatrix = [];
+    this.changedMatrix = this.createSquareMatrix(this.state.valueMatrix.length, false);
+  }
+
+  initializeIdMatrix() {
+    this.idMatrix = this.createSquareMatrix(this.state.valueMatrix.length, 0);
+  }
+
+  createSquareMatrix(len, initialValue) {
+    let newMatrix = [];
     for (let i = 0; i < len; i++) {
-      this.changedMatrix.push(new Array(len).fill(false));
-    }
+      newMatrix.push(new Array(len).fill(initialValue))
+    } 
+    return newMatrix;
   }
 
   handleKeyDown(e) {
+    if (!this.isGameAlive()) {
+      return;
+    }
     this.resetChangedMatrix();
     switch(e.key) {
       case 'ArrowUp':
@@ -93,11 +139,11 @@ class Game extends React.Component {
       default:
         break;
     }
-    this.isGameAlive();
   }
 
   moveVertical(isDirectionUp) {
-    let matrix = copy2DArray(this.state.valueMatrix);
+    // let matrix = copy2DArray(this.state.valueMatrix);
+    let matrix = this.state.valueMatrix;
     let changed = false;
 
     for (let col = 0; col < matrix.length; col++) {
@@ -106,13 +152,15 @@ class Game extends React.Component {
       let gridCol = matrix.map((row) => {
         return row[col];
       });
+
+      // move cells
       if (isDirectionUp) {
         moveResult = this.moveArrayForward(gridCol);
         changed = moveResult.changed || changed;
       } else {
         gridCol.reverse();
         moveResult = this.moveArrayForward(gridCol);
-        changed = this.moveArrayForward(gridCol) || changed;
+        changed = moveResult.changed || changed;
         gridCol.reverse();
         moveResult.added.reverse();
       }
@@ -131,7 +179,8 @@ class Game extends React.Component {
   }
 
   moveHorizontal(isDirectionLeft) {
-    let matrix = copy2DArray(this.state.valueMatrix);
+    // let matrix = copy2DArray(this.state.valueMatrix);
+    let matrix = this.state.valueMatrix;
     let changed = false;
 
     for (let row = 0; row < matrix.length; row++) {
@@ -172,25 +221,25 @@ class Game extends React.Component {
     let added = new Array(array.length).fill(false);
 
     for (let i = 1; i < array.length; i++) {
-      if (array[i] === 0) {
+      if (!array[i]) {
         continue;
       }
-
-      // move element forward to the furthest vacancy
+      // move element forward to the most left vacancy
       let targetPos = i;
-      while (targetPos > 0 && array[targetPos - 1] === 0) {
+      while (targetPos > 0 && !array[targetPos - 1]) {
         targetPos--;
       }
-
       // change position
-      if (targetPos > 0 && !added[targetPos - 1] && array[targetPos - 1] === array[i]) {
+      if (targetPos > 0 && !added[targetPos - 1] && array[targetPos - 1].value === array[i].value) {
         targetPos--;
-        array[targetPos] *= 2;
-        array[i] = 0;
+        // array[targetPos].id = array[i].id;
+        array[targetPos] = array[i];
+        array[targetPos].value *= 2;
+        array[i] = null;
         added[targetPos] = true;
       } else {
         array[targetPos] = array[i];
-        array[i] = targetPos !== i ? 0 : array[i];
+        array[i] = targetPos !== i ? null : array[i];
       }
 
       changed = changed || targetPos !== i;
@@ -204,7 +253,7 @@ class Game extends React.Component {
 
     for (let row = 0; row < matrix.length; row++) {
       for (let col = 0; col < matrix[row].length; col++) {
-        if (matrix[row][col] === 0) {
+        if (!matrix[row][col]) {
           emptyCells.push({row, col});
         }
       }
@@ -213,8 +262,9 @@ class Game extends React.Component {
     for (let i = 0; i < num; i++) {
       if (emptyCells.length) {
         let randomIndex = getRandomInt(emptyCells.length);
-        let newCellLocation = emptyCells[randomIndex];
-        matrix[newCellLocation.row][newCellLocation.col] = 2;
+        let newCellPos = emptyCells[randomIndex];
+        this.idCounter++;
+        matrix[newCellPos.row][newCellPos.col] = new CellData(this.idCounter, 2);
         emptyCells.splice(randomIndex, 1);
       }
     }
@@ -222,34 +272,45 @@ class Game extends React.Component {
 
   isGameAlive() {
     let isAlive = false;
-    let matrix = copy2DArray(this.state.valueMatrix);
-    
-    // check horizontal move
-    matrix.forEach((row) => {
-      let checkLeft = this.moveArrayForward([].concat(row)).changed;
-      let checkRight = this.moveArrayForward([].concat(row).reverse()).changed;
-      isAlive = checkLeft || checkRight || isAlive;
-    });
+    let matrix = this.state.valueMatrix;
+    let boundary = matrix.length - 1;
 
-    // check vertical
-    for (let col = 0; col < matrix.length; col++) {
-      let gridCol = matrix.map((row) => {
-        return row[col];
-      });
-      let checkUp = this.moveArrayForward([].concat(gridCol)).changed;
-      let checkDown = this.moveArrayForward([].concat(gridCol).reverse()).changed;
-      isAlive = checkUp || checkDown || isAlive;
+    for (let i = 0; i < matrix.length; i++) {
+      for (let j = 0; j < matrix.length; j++) {
+        let currentCell = matrix[i][j];
+        if (!currentCell) {
+          isAlive = true;
+          break;
+        }
+        if (i < boundary) {
+          let rightNeighbor = matrix[i + 1][j];
+          isAlive =  isAlive || !rightNeighbor || currentCell.value === rightNeighbor.value;
+        }
+        if (j < boundary) {
+          let downNeighbor = matrix[i][j + 1];
+          isAlive = isAlive || !downNeighbor || currentCell.value === downNeighbor.value;
+        }
+      }
+      if (isAlive) {
+        break;
+      }
     }
 
-    this.setState({isAlive});
+    if (this.state.isAlive !== isAlive) {
+      this.setState({isAlive});
+    }
+    return isAlive;
   }
 
   render() {
+    let gameOverCover;
     if (!this.state.isAlive) {
-      alert('GAME OVER!');
+      gameOverCover = <GameOverCover/>;
     }
     return (
       <div onKeyDown={this.handleKeyDown} tabIndex="0">
+        {gameOverCover}
+        <BackgroundBoard size={this.state.valueMatrix.length}/>
         <GridBoard 
           valueMatrix={this.state.valueMatrix}
           changedMatrix={this.changedMatrix}
