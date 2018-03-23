@@ -1,4 +1,5 @@
 import React from 'react';
+// import PropTypes from 'prop-types';
 import { getRandomInt } from '../../Utils';
 import CellData from './CellData';
 import './Game.css';
@@ -75,7 +76,6 @@ function GridBoard(props) {
 class Game extends React.Component {
   constructor(props) {
     super(props);
-    this.checkProps(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
 
     // let matrix = props.matrix || [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 0], [0, 0, 0, 0]];
@@ -88,19 +88,6 @@ class Game extends React.Component {
       valueMatrix: matrix,
       isAlive: true
     };
-  }
-
-  checkProps(props) {
-    if (props.matrix) {
-      if (props.matrix.length !== 4) {
-        throw(new Error('wrong matrix row number'));
-      }
-      props.matrix.forEach(row => {
-        if (row.length !== 4) {
-          throw(new Error('wrong matrix col number'));
-        }
-      });
-    }
   }
 
   createSquareMatrix(size, initialValue) {
@@ -186,8 +173,6 @@ class Game extends React.Component {
   moveHorizontal(isDirectionLeft) {
     let matrix = this.cloneMatrix(this.state.valueMatrix);
     let changed = false;
-    // console.log(this.state.valueMatrix);
-    // console.log(matrix);
 
     for (let row = 0; row < matrix.length; row++) {
       let moveResult;
@@ -207,7 +192,6 @@ class Game extends React.Component {
       // fill in the new matrix and update changed mark matrix
       matrix[row] = gridRow;
     }
-    // console.log(matrix);
 
     if (changed) {
       this.spawnNewCell(matrix);
@@ -308,9 +292,6 @@ class Game extends React.Component {
   }
 
   render() {
-    console.log('render');
-    console.log(this.state.valueMatrix);
-    console.log('render');
     let gameOverCover;
     if (!this.state.isAlive) {
       gameOverCover = <GameOverCover/>;
@@ -322,6 +303,58 @@ class Game extends React.Component {
         <GridBoard valueMatrix={this.state.valueMatrix} />
       </div>
     );
+  }
+}
+
+Game.propTypes = {
+  matrix: function(props, propName) {
+    // check prop name
+    if (propName !== 'matrix') {
+      return new Error('Wrong props name(should be matrix)!')
+    }
+
+    let matrix = props[propName];
+
+    if (matrix === null || matrix === undefined) {
+      return null;
+    }
+
+    let sizeErrMsg = 'Wrong matrix size!';
+    let valueErrMsg = 'Wrong matrix value! Either number and 0 or CellData with null!';
+
+    let matrixType; // Either 'number' or 'CellData'
+
+    if (matrix.length !== 4) {
+      return new Error(sizeErrMsg);
+    }
+
+    for (let row = 0; row < matrix.length; row++) {
+      console.log(matrix[row].length);
+      if (matrix[row].length !== 4) {
+        return new Error(sizeErrMsg);
+      }
+      for (let col = 0; col < matrix.length; col++) {
+        let cell = matrix[row][col];
+
+        if (row === 0 && col === 0) {
+          if (cell === null || cell instanceof CellData) {
+            matrixType = 'CellData';
+          } else {
+            matrixType = 'number';
+          }
+        }
+
+        if (matrixType === 'number') {
+          if (typeof cell !== 'number') {
+            return new Error(valueErrMsg);
+          }
+        } else {
+          if (!cell || !(cell instanceof CellData)) {
+            return new Error(valueErrMsg);
+          }
+        }
+      }
+    }
   }
 }
 
