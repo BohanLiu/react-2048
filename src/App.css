@@ -1,3 +1,10 @@
+body {
+  width: 100%;
+  /* remove over scroll in iOS safari */
+  position: fixed;
+  overflow: hidden;
+}
+
 .App {
   text-align: center;
 }

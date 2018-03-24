@@ -77,6 +77,8 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleTouchStart = this.handleTouchStart.bind(this);
+    this.handleTouchEnd = this.handleTouchEnd.bind(this); 
 
     // let matrix = props.matrix || [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 0], [0, 0, 0, 0]];
     let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
@@ -113,11 +115,11 @@ class Game extends React.Component {
     return clonedMatrix;
   }
 
-  handleKeyDown(e) {
+  handleKeyDown(evt) {
     if (!this.isGameAlive()) {
       return;
     }
-    switch(e.key) {
+    switch(evt.key) {
       case 'ArrowUp':
         this.moveVertical(true);
         break;
@@ -133,6 +135,37 @@ class Game extends React.Component {
       default:
         break;
     }
+  }
+
+  handleTouchStart(evt) {
+    evt.preventDefault();
+    this.touchStartPoint = {
+      x: evt.touches[0].clientX, 
+      y: evt.touches[0].clientY
+    };
+  }
+
+  handleTouchEnd(evt) {
+    let touchEndPoint = {
+      x: evt.changedTouches[0].clientX,
+      y: evt.changedTouches[0].clientY
+    };
+    let touchStartPoint = this.touchStartPoint;
+
+    let shiftX = touchStartPoint.x - touchEndPoint.x;
+    let shiftY = touchStartPoint.y - touchEndPoint.y;
+
+    // shift less than 5 is ignored
+    if (Math.abs(shiftX) > 5 || Math.abs(shiftY) > 5) {
+      if (Math.abs(shiftX) > Math.abs(shiftY)) {
+        // shiftX > 0 => swipe left
+        this.moveHorizontal(shiftX > 0);
+      } else {
+        // shiftY > 0 => swipe up
+        this.moveVertical(shiftY > 0);
+      }
+    }
+    
   }
 
   moveVertical(isDirectionUp) {
@@ -297,7 +330,10 @@ class Game extends React.Component {
       gameOverCover = <GameOverCover/>;
     }
     return (
-      <div onKeyDown={this.handleKeyDown} tabIndex="0" >
+      <div onKeyDown={this.handleKeyDown} 
+        onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd} 
+        tabIndex="0" 
+      >
         {gameOverCover}
         <BackgroundBoard size={this.state.valueMatrix.length} />
         <GridBoard valueMatrix={this.state.valueMatrix} />
