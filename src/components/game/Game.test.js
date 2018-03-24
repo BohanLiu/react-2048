@@ -2,14 +2,6 @@ import React from 'react';
 import Game from './Game';
 import CellData from './CellData';
 
-// bug 1 : unmovable can still spawn new cell
-
-// bug 2 : downwards animation sometimes disappears
-
-// bug 3 : game over detection error
-
-// bug 4 : test pass, but add function has deviant behaviors
-
 describe('game initializes correctly', () => {
   let game = new Game({});
   
