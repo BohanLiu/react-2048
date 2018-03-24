@@ -2,4 +2,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  width: 100%;
+  /* remove over scroll in iOS safari */
+  position: fixed;
+  overflow: hidden;
 }
