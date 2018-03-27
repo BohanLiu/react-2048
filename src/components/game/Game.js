@@ -24,10 +24,11 @@ function BackgroundBoard(props) {
   );
 }
 
-function GameOverCover() {
+function GameOverCover(props) {
   return (
     <div className="grid-board gameover-cover">
       GAME OVER
+      <button onClick={props.handleNewGame}>NEW GAME</button>
     </div>
   );
 }
@@ -79,17 +80,42 @@ class Game extends React.Component {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleTouchStart = this.handleTouchStart.bind(this);
     this.handleTouchEnd = this.handleTouchEnd.bind(this); 
-
-    // let matrix = props.matrix || [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 0], [0, 0, 0, 0]];
-    let matrix = props.matrix || [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-    matrix = this.createSquareMatrix(matrix.length, null);
+    this.handleNewGame = this.handleNewGame.bind(this);
+    
     this.idCounter = 0;
-    this.spawnNewCell(matrix, 2);
+    let matrix = this.convertMatrix(props);
+    
+    // spawn new cells
+    let isAlive = true;
+    if (this.idCounter === 0) {
+      this.spawnNewCell(matrix, 2);
+    } else {
+      isAlive = this.isGameAlive(matrix);
+    }
 
     this.state = {
       valueMatrix: matrix,
-      isAlive: true
+      isAlive: isAlive
     };
+  }
+
+  convertMatrix(props) {
+    let matrix;
+    if (props && props.matrix) {
+      matrix = [[],[],[],[]];
+      props.matrix.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+          if (cell === null || cell instanceof CellData) {
+            return;
+          } else {
+            matrix[rowIndex][colIndex] = cell === 0 ? null : new CellData(++this.idCounter, cell);
+          }
+        })
+      });
+    } else {
+      matrix = this.createSquareMatrix(4, null);
+    }
+    return matrix;
   }
 
   createSquareMatrix(size, initialValue) {
@@ -99,7 +125,6 @@ class Game extends React.Component {
     }
     return matrix;
   }
-
 
   cloneMatrix(matrix, dataOnly = true) {
     let clonedMatrix = [];
@@ -115,8 +140,21 @@ class Game extends React.Component {
     return clonedMatrix;
   }
 
+  handleNewGame() {
+    let matrixSize = this.state.valueMatrix.length;
+    let matrix = this.createSquareMatrix(matrixSize, null);
+    this.spawnNewCell(matrix, 2);
+    this.setState ({
+      valueMatrix: matrix,
+      isAlive: true
+    });
+  }
+
   handleKeyDown(evt) {
     if (!this.isGameAlive()) {
+      this.setState({
+        isAlive: false
+      })
       return;
     }
     switch(evt.key) {
@@ -272,7 +310,6 @@ class Game extends React.Component {
 
   spawnNewCell(matrix, num = 1) {
     let emptyCells = [];
-
     for (let row = 0; row < matrix.length; row++) {
       for (let col = 0; col < matrix[row].length; col++) {
         if (!matrix[row][col]) {
@@ -292,9 +329,9 @@ class Game extends React.Component {
     }
   }
 
-  isGameAlive() {
+  isGameAlive(valueMatrix) {
     let isAlive = false;
-    let matrix = this.state.valueMatrix;
+    let matrix = valueMatrix || this.state.valueMatrix;
     let boundary = matrix.length - 1;
 
     for (let i = 0; i < matrix.length; i++) {
@@ -318,16 +355,14 @@ class Game extends React.Component {
       }
     }
 
-    if (this.state.isAlive !== isAlive) {
-      this.setState({isAlive});
-    }
     return isAlive;
   }
 
   render() {
     let gameOverCover;
+    // let gameOverCover = <GameOverCover handleNewGame={this.handleNewGame}/>;
     if (!this.state.isAlive) {
-      gameOverCover = <GameOverCover/>;
+      gameOverCover = <GameOverCover handleNewGame={this.handleNewGame}/>;
     }
     return (
       <div onKeyDown={this.handleKeyDown} 
@@ -365,7 +400,6 @@ Game.propTypes = {
     }
 
     for (let row = 0; row < matrix.length; row++) {
-      console.log(matrix[row].length);
       if (matrix[row].length !== 4) {
         return new Error(sizeErrMsg);
       }

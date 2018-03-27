@@ -1,6 +1,6 @@
 {
   "name": "react-2048",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "private": true,
   "dependencies": {
     "react": "^16.2.0",
@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "gh-pages": "^1.1.0",
+    "react-test-renderer": "^16.2.0",
     "uglify-js-brunch": "^2.10.0"
   },
   "homepage": "http://BohanLiu.github.io/react-2048"

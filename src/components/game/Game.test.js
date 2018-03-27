@@ -1,11 +1,13 @@
 import React from 'react';
 import Game from './Game';
 import CellData from './CellData';
+import ReactTestUtils from 'react-dom/test-utils';
+import TestRenderer from 'react-test-renderer';
 
-describe('game initializes correctly', () => {
-  let game = new Game({});
-  
-  it('has two initial cells', () => {
+describe('Game', () => {
+  it('fresh start should has two initial cells', () => {
+    let game = new Game({});
+
     let matrix = game.state.valueMatrix;
     let counter = 0;
     
@@ -18,10 +20,84 @@ describe('game initializes correctly', () => {
     });
 
     expect(counter).toEqual(2);
+    expect(game.state.isAlive).toBe(true);
+  });
+
+  it('starts with given matrix should has the same matrix', () => {
+    let initialMatrix = [
+      [2, 0, 0, 0],
+      [0, 4, 0, 0],
+      [0, 0, 8, 0],
+      [0, 0, 0, 16]
+    ];
+    
+    let game = new Game({matrix: initialMatrix});
+    let gameMatrix = game.state.valueMatrix;
+
+    initialMatrix.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === 0) {
+          expect(gameMatrix[rowIndex][colIndex]).toBeNull();
+        } else {
+          expect(gameMatrix[rowIndex][colIndex].value).toEqual(cell);
+        }
+      })
+    });
+
+    expect(game.idCounter).toBe(4);
+  });
+
+  it('game over shows game over cover and new game button', () => {
+    let initialMatrix = [
+      [2, 4, 8, 16],
+      [4, 8, 16, 32],
+      [8, 16, 32, 64],
+      [16, 32, 64, 128]
+    ];
+
+    let gameRenderer = TestRenderer.create(<Game matrix={initialMatrix}/>);
+    let gameInstance = gameRenderer.root;
+    let gameState = gameRenderer.getInstance().state;
+    let gameMatrix = gameState.valueMatrix;
+    
+    expect(gameState.isAlive).toBe(false);
+    expect(gameInstance.findByProps({className: 'grid-board gameover-cover'})).not.toBeNull();
+    expect(gameInstance.findByType('button').props.children).toEqual('NEW GAME');
+  });
+
+  it('new game button should reset the game', () => {
+    let initialMatrix = [
+      [2, 4, 8, 16],
+      [4, 8, 16, 32],
+      [8, 16, 32, 64],
+      [16, 32, 64, 128]
+    ];
+
+    let gameRenderer = TestRenderer.create(<Game matrix={initialMatrix}/>);
+    let gameInstance = gameRenderer.root;
+    
+    let newGameButton = gameInstance.findByType('button');
+    // simulate click on button
+    newGameButton.props.onClick()
+
+    // the cover should be removed
+    expect(() => {gameInstance.findByProps({className: 'grid-board gameover-cover'})}).toThrow();
+    // the game should now has two initial cells only
+    let gameMatrix = gameRenderer.getInstance().state.valueMatrix;
+    let counter = 0;
+    gameMatrix.forEach((row) => {
+      row.forEach((cell) => {
+        if (cell) {
+          counter++;
+        }
+      })
+    });
+    expect(counter).toEqual(2);
   });
 
 });
 
+// move algorithm unit tests 
 describe('game moves array forward testing', () => {
   let game;
   let array;
