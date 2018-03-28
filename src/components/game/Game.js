@@ -3,6 +3,16 @@ import React from 'react';
 import { getRandomInt } from '../../Utils';
 import CellData from './CellData';
 import './Game.css';
+import ScorePanel from '../score-panel/ScorePanel';
+
+function ScoreBoard(props) {
+  return (
+    <div className='score-board'>
+      <ScorePanel title='Score' score={props.score} hasDiffAnimation={true}/>
+      <ScorePanel title='Best' score={props.bestScore}/>
+    </div>
+  );
+}
 
 function BackgroundBoard(props) {
   let rows = [];
@@ -95,7 +105,9 @@ class Game extends React.Component {
 
     this.state = {
       valueMatrix: matrix,
-      isAlive: isAlive
+      isAlive: isAlive,
+      score: 0,
+      bestScore: 0
     };
   }
 
@@ -146,7 +158,8 @@ class Game extends React.Component {
     this.spawnNewCell(matrix, 2);
     this.setState ({
       valueMatrix: matrix,
-      isAlive: true
+      isAlive: true,
+      score: 0
     });
   }
 
@@ -273,7 +286,7 @@ class Game extends React.Component {
   /**
    * Move array values to left based on 2048 like rule 
    * @param {number[]} array 
-   * @returns {object} {changed: boolean, add: number[]}
+   * @returns {object} {changed: boolean, added: boolean[]}
    */
   moveArrayForward(array) {
     let changed = false;
@@ -295,6 +308,7 @@ class Game extends React.Component {
         // array[targetPos].id = array[i].id;
         array[targetPos] = array[i];
         array[targetPos].setValue(array[i].value * 2);
+        this.updateScore(array[targetPos].value); // update score
         array[i] = null;
         added[targetPos] = true;
       } else {
@@ -358,8 +372,20 @@ class Game extends React.Component {
     return isAlive;
   }
 
+  updateScore(score2Add) {
+    let score = this.state.score;
+    let bestScore = this.state.bestScore;
+    score += score2Add;
+    bestScore = score > bestScore ? score : bestScore;
+    this.setState({
+      score,
+      bestScore
+    });
+  }
+
   render() {
     let gameOverCover;
+    // let gameOverCover = <GameOverCover/>;
     if (!this.state.isAlive) {
       gameOverCover = <GameOverCover handleNewGame={this.handleNewGame}/>;
     }
@@ -368,8 +394,9 @@ class Game extends React.Component {
         onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd} 
         tabIndex='0'
       >
-        {gameOverCover}
+        <ScoreBoard score={this.state.score} bestScore={this.state.bestScore}/>
         <BackgroundBoard size={this.state.valueMatrix.length} />
+        {gameOverCover}
         <GridBoard valueMatrix={this.state.valueMatrix} />
       </div>
     );

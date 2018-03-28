@@ -1,0 +1,43 @@
+:root {
+  --border-radius: 5px;
+}
+
+.score-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: var(--border-radius);
+  background-color: #ffa60083;
+  font-weight: bold;
+}
+
+.panel-title {
+  color: black;
+  background-color: #ffa500;
+  width: 100%;
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
+  box-sizing: border-box;
+  padding: 0 0.5em;
+}
+
+.panel-score {
+  width: 100%;
+  color: black;
+}
+
+.score-diff {
+  position: absolute;
+  margin-top: 1em;
+  visibility: hidden;
+  animation: Move-up-disappear 500ms;
+  color: grey;
+}
+@keyframes Move-up-disappear {
+  from {
+    visibility: visible
+  }
+  to {
+    transform: translateY(-1em)
+  }
+}
