@@ -9,16 +9,16 @@ function BackgroundBoard(props) {
   for (let i = 0; i < props.size; i++) {
     let cells = [];
     for (let j = 0; j < props.size; j++) {
-      cells.push(<div key={i + '-' + j} className="background-cell"></div>);
+      cells.push(<div key={i + '-' + j} className='background-cell'></div>);
     }
     let row = (
-      <div key={'row-'+i} className="background-row">
+      <div key={'row-'+i} className='background-row'>
         {cells}
       </div>);
     rows.push(row);
   }
   return (
-    <div className="background-board">
+    <div className='background-board'>
       {rows}
     </div>
   );
@@ -26,16 +26,16 @@ function BackgroundBoard(props) {
 
 function GameOverCover(props) {
   return (
-    <div className="grid-board gameover-cover">
-      GAME OVER
-      <button onClick={props.handleNewGame}>NEW GAME</button>
+    <div className='grid-board gameover-cover'>
+      <span>GAME OVER</span>
+      <button className='new-game-btn' onClick={props.handleNewGame}>NEW GAME</button>
     </div>
   );
 }
 
 function GridCell(props) {
   // cell style
-  let className = "grid-cell cell-" + (props.value > 2048 ? 'exceeded' : props.value);
+  let className = 'grid-cell cell-' + (props.value > 2048 ? 'exceeded' : props.value);
   if (props.isChanged) {
     className += ' cell-value-changed';
   }
@@ -68,7 +68,7 @@ function GridBoard(props) {
   });
 
   return (
-    <div className="grid-board">
+    <div className='grid-board'>
       {cells}
     </div>
   );
@@ -360,14 +360,13 @@ class Game extends React.Component {
 
   render() {
     let gameOverCover;
-    // let gameOverCover = <GameOverCover handleNewGame={this.handleNewGame}/>;
     if (!this.state.isAlive) {
       gameOverCover = <GameOverCover handleNewGame={this.handleNewGame}/>;
     }
     return (
       <div onKeyDown={this.handleKeyDown} 
         onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd} 
-        tabIndex="0" 
+        tabIndex='0'
       >
         {gameOverCover}
         <BackgroundBoard size={this.state.valueMatrix.length} />
