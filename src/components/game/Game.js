@@ -231,15 +231,18 @@ class Game extends React.Component {
       });
 
       // move cells
-      if (isDirectionUp) {
-        moveResult = this.moveArrayForward(gridCol);
-        changed = moveResult.changed || changed;
-      } else {
+      if (!isDirectionUp) {
         gridCol.reverse();
-        moveResult = this.moveArrayForward(gridCol);
-        changed = moveResult.changed || changed;
+      }
+      moveResult = this.moveArrayForward(gridCol);
+      changed = moveResult.changed || changed;
+      moveResult.added.forEach((added, index) => {
+        if (added) {
+          this.updateScore(gridCol[index].value);
+        }
+      });
+      if (!isDirectionUp) {
         gridCol.reverse();
-        moveResult.added.reverse();
       }
 
       // fill in the new matrix
@@ -263,13 +266,17 @@ class Game extends React.Component {
       // change by row
       let gridRow = matrix[row];
       
-      if (isDirectionLeft) {
-        moveResult = this.moveArrayForward(gridRow);
-        changed = moveResult.changed || changed;
-      } else {
+      if (!isDirectionLeft) {
         gridRow.reverse();
-        moveResult = this.moveArrayForward(gridRow);
-        changed = moveResult.changed || changed;
+      }
+      moveResult = this.moveArrayForward(gridRow);
+      changed = moveResult.changed || changed;
+      moveResult.added.forEach((added, index) => {
+        if (added) {
+          this.updateScore(gridRow[index].value);
+        }
+      });
+      if (!isDirectionLeft) {
         gridRow.reverse();
       }
 
@@ -305,10 +312,8 @@ class Game extends React.Component {
       // change position
       if (targetPos > 0 && !added[targetPos - 1] && array[targetPos - 1].value === array[i].value) {
         targetPos--;
-        // array[targetPos].id = array[i].id;
         array[targetPos] = array[i];
         array[targetPos].setValue(array[i].value * 2);
-        this.updateScore(array[targetPos].value); // update score
         array[i] = null;
         added[targetPos] = true;
       } else {
@@ -385,7 +390,6 @@ class Game extends React.Component {
 
   render() {
     let gameOverCover;
-    // let gameOverCover = <GameOverCover/>;
     if (!this.state.isAlive) {
       gameOverCover = <GameOverCover handleNewGame={this.handleNewGame}/>;
     }

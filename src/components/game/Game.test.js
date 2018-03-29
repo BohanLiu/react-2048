@@ -5,7 +5,7 @@ import ReactTestUtils from 'react-dom/test-utils';
 import TestRenderer from 'react-test-renderer';
 
 describe('Game', () => {
-  it('fresh start should has two initial cells', () => {
+  it('fresh start should has two initial cells and 0 score', () => {
     let game = new Game({});
 
     let matrix = game.state.valueMatrix;
@@ -21,6 +21,7 @@ describe('Game', () => {
 
     expect(counter).toEqual(2);
     expect(game.state.isAlive).toBe(true);
+    expect(game.state.score).toEqual(0);
   });
 
   it('starts with given matrix should has the same matrix', () => {
@@ -93,6 +94,8 @@ describe('Game', () => {
       })
     });
     expect(counter).toEqual(2);
+    // score reset to 0
+    expect(gameRenderer.getInstance().state.score).toEqual(0);
   });
 
   it('score should be updated correctly', () => {
