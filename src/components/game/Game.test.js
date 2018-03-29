@@ -116,6 +116,24 @@ describe('Game', () => {
     expect(game.state.bestScore).toEqual(4);
   });
 
+  it('score should be updated correctly', () => {
+    let initialMatrix = [
+      [2, 0, 0, 0],
+      [2, 4, 0, 0],
+      [0, 4, 8, 0],
+      [0, 0, 8, 0]
+    ];
+
+    let gameRenderer = TestRenderer.create(<Game matrix={initialMatrix}/>);
+    let game = gameRenderer.getInstance();
+    expect(game.state.score).toEqual(0);
+    expect(game.state.bestScore).toEqual(0);
+    
+    game.moveVertical(true);
+    expect(game.state.score).toEqual(28);
+    expect(game.state.bestScore).toEqual(28);
+  });
+
 });
 
 // move algorithm unit tests 

@@ -222,6 +222,7 @@ class Game extends React.Component {
   moveVertical(isDirectionUp) {
     let matrix = this.cloneMatrix(this.state.valueMatrix);
     let changed = false;
+    let score2Add = 0;
 
     for (let col = 0; col < matrix.length; col++) {
       let moveResult;
@@ -236,19 +237,23 @@ class Game extends React.Component {
       }
       moveResult = this.moveArrayForward(gridCol);
       changed = moveResult.changed || changed;
-      moveResult.added.forEach((added, index) => {
-        if (added) {
-          this.updateScore(gridCol[index].value);
+      moveResult.added.forEach((isAdded, index) => {
+        if (isAdded) {
+          score2Add += gridCol[index].value;
         }
       });
       if (!isDirectionUp) {
         gridCol.reverse();
       }
-
+      
       // fill in the new matrix
       for (let row = 0; row < matrix.length; row++) {
         matrix[row][col] = gridCol[row];
       }
+    }
+    
+    if (score2Add > 0) {
+      this.updateScore(score2Add);
     }
 
     if (changed) {
@@ -260,6 +265,7 @@ class Game extends React.Component {
   moveHorizontal(isDirectionLeft) {
     let matrix = this.cloneMatrix(this.state.valueMatrix);
     let changed = false;
+    let score2Add = 0;
 
     for (let row = 0; row < matrix.length; row++) {
       let moveResult;
@@ -271,9 +277,9 @@ class Game extends React.Component {
       }
       moveResult = this.moveArrayForward(gridRow);
       changed = moveResult.changed || changed;
-      moveResult.added.forEach((added, index) => {
-        if (added) {
-          this.updateScore(gridRow[index].value);
+      moveResult.added.forEach((isAdded, index) => {
+        if (isAdded) {
+          score2Add += gridRow[index].value;
         }
       });
       if (!isDirectionLeft) {
@@ -282,6 +288,10 @@ class Game extends React.Component {
 
       // fill in the new matrix and update changed mark matrix
       matrix[row] = gridRow;
+    }
+
+    if (score2Add > 0) {
+      this.updateScore(score2Add);
     }
 
     if (changed) {
