@@ -198,8 +198,11 @@
   animation: Cell-newly-spawned 250ms;
 }
 @keyframes Cell-newly-spawned {
-  from { visibility: hidden; }
-  40% { transform: scale(0.2); }
+  from { 
+    visibility: hidden;
+    transform: scale(0);
+  }
+  40% { transform: scale(0); }
   to { transform: scale(1); }
 }
 

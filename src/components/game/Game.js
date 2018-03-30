@@ -43,20 +43,38 @@ function GameOverCover(props) {
   );
 }
 
-function GridCell(props) {
-  // cell style
-  let className = 'grid-cell cell-' + (props.value > 2048 ? 'exceeded' : props.value);
-  if (props.isChanged) {
-    className += ' cell-value-changed';
+class GridCell extends React.Component {
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps.isNewlySpawned) {
+      return true;
+    }
+    if (this.props.isValueChanged !== nextProps.isValueChanged) {
+      return true;
+    }
+    if (this.props.value !== nextProps.value) {
+      return true;
+    }
+    if (this.props.pos[0] !== nextProps.pos[0] || this.props.pos[1] !== nextProps.pos[1]) {
+      return true;
+    }
+    return false;
   }
-  if (props.isNew) {
-    className += ' cell-newly-spawned';
+
+  render() {
+    // cell style
+    let className = 'grid-cell cell-' + (this.props.value > 2048 ? 'exceeded' : this.props.value);
+    if (this.props.isValueChanged) {
+      className += ' cell-value-changed';
+    }
+    if (this.props.isNew) {
+      className += ' cell-newly-spawned';
+    }
+    // cell position
+    className += ' pos-' + this.props.pos[0] + '-' + this.props.pos[1]
+    return (
+      <div className={className}>{this.props.value > 0 ? this.props.value : ''}</div>
+    );
   }
-  // cell position
-  className += ' pos-' + props.pos[0] + '-' + props.pos[1]
-  return (
-    <div className={className}>{props.value > 0 ? props.value : ''}</div>
-  );
 }
 
 function GridBoard(props) {
@@ -68,7 +86,7 @@ function GridBoard(props) {
           <GridCell 
             key={cell.id} 
             value={cell.value} 
-            isChanged={cell.isValueChanged}
+            isValueChanged={cell.isValueChanged}
             isNew={cell.isNewlySpawned}
             pos={[rowIndex, colIndex]}
           />
@@ -189,7 +207,7 @@ class Game extends React.Component {
   }
 
   handleTouchStart(evt) {
-    evt.preventDefault();
+    // evt.preventDefault();
     this.touchStartPoint = {
       x: evt.touches[0].clientX, 
       y: evt.touches[0].clientY
