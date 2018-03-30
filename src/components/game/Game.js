@@ -164,10 +164,8 @@ class Game extends React.Component {
   }
 
   handleKeyDown(evt) {
-    if (!this.isGameAlive()) {
-      this.setState({
-        isAlive: false
-      })
+    if (!this.isGameAlive(this.state.valueMatrix)) {
+      this.setState({isAlive: false});
       return;
     }
     switch(evt.key) {
@@ -197,6 +195,10 @@ class Game extends React.Component {
   }
 
   handleTouchEnd(evt) {
+    if (!this.isGameAlive(this.state.valueMatrix)) {
+      this.setState({isAlive: false});
+      return;
+    }
     let touchEndPoint = {
       x: evt.changedTouches[0].clientX,
       y: evt.changedTouches[0].clientY
@@ -216,7 +218,6 @@ class Game extends React.Component {
         this.moveVertical(shiftY > 0);
       }
     }
-    
   }
 
   moveVertical(isDirectionUp) {
@@ -399,7 +400,7 @@ class Game extends React.Component {
   }
 
   render() {
-    let gameOverCover;
+    let gameOverCover = null;
     if (!this.state.isAlive) {
       gameOverCover = <GameOverCover handleNewGame={this.handleNewGame}/>;
     }
