@@ -105,6 +105,10 @@ function GridBoard(props) {
 class Game extends React.Component {
   constructor(props) {
     super(props);
+
+    // game ref
+    this.game = null;
+
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleTouchStart = this.handleTouchStart.bind(this);
     this.handleTouchEnd = this.handleTouchEnd.bind(this); 
@@ -127,6 +131,12 @@ class Game extends React.Component {
       score: 0,
       bestScore: 0
     };
+  }
+
+  componentDidMount() {
+    if (this.game) {
+      this.game.focus();
+    }
   }
 
   convertMatrix(props) {
@@ -422,9 +432,12 @@ class Game extends React.Component {
       gameOverCover = <GameOverCover handleNewGame={this.handleNewGame}/>;
     }
     return (
-      <div onKeyDown={this.handleKeyDown} 
+      <div 
+        className="game-container"
+        onKeyDown={this.handleKeyDown} 
         onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd} 
         tabIndex='0'
+        ref={(element) => {this.game = element;}}
       >
         <ScoreBoard score={this.state.score} bestScore={this.state.bestScore}/>
         <BackgroundBoard size={this.state.valueMatrix.length} />
