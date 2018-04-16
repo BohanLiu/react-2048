@@ -27,7 +27,7 @@
   to { transform: rotate(360deg); }
 }
 
-@media (max-height: 500px) {
+@media (max-height: 500px), (min-width: 500px) and (max-height: 800px) {
   .App-logo {
     display: none;
   }

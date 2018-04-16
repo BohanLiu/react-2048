@@ -7,7 +7,7 @@ class CellData {
 
   setValue(value) {
     this.value = value;
-    this.isValueChanged = true;
+    this.hasValueChanged = true;
   }
 
   setIsNewlySpawned() {
@@ -15,13 +15,13 @@ class CellData {
   }
   
   cleanStatusData() {
-    this.isValueChanged = false;
+    this.hasValueChanged = false;
     this.isNewlySpawned = false;
   }
 
   clone() {
     let clonedCell = new CellData(this.id, this.value);
-    clonedCell.isValueChanged = this.isValueChanged;
+    clonedCell.hasValueChanged = this.hasValueChanged;
     clonedCell.isNewlySpawned = this.isNewlySpawned;
     return clonedCell;
   }

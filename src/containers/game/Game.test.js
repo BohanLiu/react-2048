@@ -1,6 +1,6 @@
 import React from 'react';
 import Game from './Game';
-import CellData from './CellData';
+import CellData from './cell-data/CellData';
 import ReactTestUtils from 'react-dom/test-utils';
 import TestRenderer from 'react-test-renderer';
 

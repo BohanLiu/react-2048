@@ -16,7 +16,7 @@ describe("CellData tests:", () => {
     expect(clonedCell.id).toEqual(cell.id);
     expect(clonedCell.value).toEqual(cell.value);
     expect(clonedCell.isNewlySpawned).toEqual(cell.isNewlySpawned);
-    expect(clonedCell.isValueChanged).toEqual(cell.isValueChanged);
+    expect(clonedCell.hasValueChanged).toEqual(cell.hasValueChanged);
   });
 
   it('should clone a CellData with same id and value but no status', () => {
@@ -25,7 +25,7 @@ describe("CellData tests:", () => {
     expect(clonedCell.id).toEqual(cell.id);
     expect(clonedCell.value).toEqual(cell.value);
     expect(clonedCell.isNewlySpawned).toEqual(false);
-    expect(clonedCell.isValueChanged).toEqual(false);
+    expect(clonedCell.hasValueChanged).toEqual(false);
   });
 
   it('should set correct value and status', () => {
@@ -33,7 +33,7 @@ describe("CellData tests:", () => {
     cell.setValue(4);
     expect(cell.id).toBe(1);
     expect(cell.value).toEqual(4);
-    expect(cell.isValueChanged).toEqual(true);
+    expect(cell.hasValueChanged).toEqual(true);
     expect(cell.isNewlySpawned).toEqual(true);
   });
 
@@ -42,13 +42,13 @@ describe("CellData tests:", () => {
     cell.setValue(4);
     expect(cell.id).toBe(1);
     expect(cell.value).toEqual(4);
-    expect(cell.isValueChanged).toEqual(true);
+    expect(cell.hasValueChanged).toEqual(true);
     expect(cell.isNewlySpawned).toEqual(true);
 
     cell.cleanStatusData();
     expect(cell.id).toBe(1);
     expect(cell.value).toEqual(4);
-    expect(cell.isValueChanged).toEqual(false);
+    expect(cell.hasValueChanged).toEqual(false);
     expect(cell.isNewlySpawned).toEqual(false);
   });
 

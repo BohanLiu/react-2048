@@ -1,106 +1,12 @@
 import React from 'react';
 // import PropTypes from 'prop-types';
 import { getRandomInt } from '../../Utils';
-import CellData from './CellData';
+import CellData from './cell-data/CellData';
+import ScoreBoard from '../../components/ScoreBoard';
+import BackgroundBoard from '../../components/BackgroundBoard';
+import GameOverCover from '../../components/GameOverCover';
+import GridBoard from '../../components/GridBoard';
 import './Game.css';
-import ScorePanel from '../score-panel/ScorePanel';
-
-function ScoreBoard(props) {
-  return (
-    <div className='score-board'>
-      <ScorePanel title='Score' score={props.score} hasDiffAnimation={true}/>
-      <ScorePanel title='Best' score={props.bestScore}/>
-    </div>
-  );
-}
-
-function BackgroundBoard(props) {
-  let rows = [];
-  for (let i = 0; i < props.size; i++) {
-    let cells = [];
-    for (let j = 0; j < props.size; j++) {
-      cells.push(<div key={i + '-' + j} className='background-cell'></div>);
-    }
-    let row = (
-      <div key={'row-'+i} className='background-row'>
-        {cells}
-      </div>);
-    rows.push(row);
-  }
-  return (
-    <div className='background-board'>
-      {rows}
-    </div>
-  );
-}
-
-function GameOverCover(props) {
-  return (
-    <div className='grid-board gameover-cover'>
-      <span>GAME OVER</span>
-      <button className='new-game-btn' onClick={props.handleNewGame}>NEW GAME</button>
-    </div>
-  );
-}
-
-class GridCell extends React.Component {
-  shouldComponentUpdate(nextProps, nextState) {
-    if (nextProps.isNewlySpawned) {
-      return true;
-    }
-    if (this.props.isValueChanged !== nextProps.isValueChanged) {
-      return true;
-    }
-    if (this.props.value !== nextProps.value) {
-      return true;
-    }
-    if (this.props.pos[0] !== nextProps.pos[0] || this.props.pos[1] !== nextProps.pos[1]) {
-      return true;
-    }
-    return false;
-  }
-
-  render() {
-    // cell style
-    let className = 'grid-cell cell-' + (this.props.value > 2048 ? 'exceeded' : this.props.value);
-    if (this.props.isValueChanged) {
-      className += ' cell-value-changed';
-    }
-    if (this.props.isNew) {
-      className += ' cell-newly-spawned';
-    }
-    // cell position
-    className += ' pos-' + this.props.pos[0] + '-' + this.props.pos[1]
-    return (
-      <div className={className}>{this.props.value > 0 ? this.props.value : ''}</div>
-    );
-  }
-}
-
-function GridBoard(props) {
-  let cells = [];
-  props.valueMatrix.forEach((row, rowIndex) => {
-    row.forEach((cell, colIndex) => {
-      if (cell) {
-        cells.push(
-          <GridCell 
-            key={cell.id} 
-            value={cell.value} 
-            isValueChanged={cell.isValueChanged}
-            isNew={cell.isNewlySpawned}
-            pos={[rowIndex, colIndex]}
-          />
-        );
-      }
-    });
-  });
-
-  return (
-    <div className='grid-board'>
-      {cells}
-    </div>
-  );
-}
 
 class Game extends React.Component {
   constructor(props) {
@@ -437,7 +343,7 @@ class Game extends React.Component {
         onKeyDown={this.handleKeyDown} 
         onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd} 
         tabIndex='0'
-        ref={(element) => {this.game = element;}}
+        ref={(game) => {this.game = game;}}
       >
         <ScoreBoard score={this.state.score} bestScore={this.state.bestScore}/>
         <BackgroundBoard size={this.state.valueMatrix.length} />
